@@ -1,0 +1,138 @@
+name: Site edit
+
+# Triggered by the CMS backend (or manually from the Actions tab).
+# Claude edits the site on the `preview` branch; Netlify then deploys the preview.
+on:
+  workflow_dispatch:
+    inputs:
+      prompt:
+        description: What the owner wants changed, in their own words
+        required: true
+        type: string
+      page:
+        description: Page the owner was on, e.g. /about
+        required: false
+        type: string
+      element:
+        description: The element the owner clicked (text, HTML snippet or source file)
+        required: false
+        type: string
+      request_id:
+        description: ID the CMS uses to find this run
+        required: false
+        type: string
+
+# Lets the CMS find this run by its request ID.
+run-name: "Site edit ${{ inputs.request_id || github.run_id }}"
+
+# One edit at a time; later requests queue instead of cancelling the current one.
+concurrency:
+  group: site-edit
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: preview
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Ask Claude to make the change
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            The site owner has requested a change to the website. Follow CLAUDE.md.
+
+            Page they were viewing: ${{ inputs.page || '(not specified)' }}
+            Element they selected: ${{ inputs.element || '(none)' }}
+
+            Their request:
+            ${{ inputs.prompt }}
+
+            When finished, report:
+            - status "changed" if you edited the site, with a plain-English summary of what changed;
+            - status "needs_clarification" if you made no changes because you need more detail, with your question;
+            - status "declined" if the request is off limits or impossible, with a short explanation.
+          claude_args: |
+            --max-turns 40
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(npm run build),Bash(npm run lint)"
+            --json-schema '{"type":"object","properties":{"status":{"type":"string","enum":["changed","needs_clarification","declined"]},"summary":{"type":"string"}},"required":["status","summary"],"additionalProperties":false}'
+
+      - name: Check result
+        id: result
+        env:
+          RESULT: ${{ steps.claude.outputs.structured_output }}
+        run: |
+          status=$(jq -r '.status // "changed"' <<<"$RESULT")
+          summary=$(jq -r '.summary // ""' <<<"$RESULT")
+
+          if [ "$status" != "changed" ]; then
+            git checkout -- . && git clean -fd
+          fi
+
+          changed=$(git status --porcelain | awk '{print $2}')
+          protected=$(echo "$changed" | grep -E '^(\.github/|netlify\.toml$|vite\.config\.js$|package(-lock)?\.json$|eslint|CLAUDE\.md$)' || true)
+          if [ -n "$protected" ]; then
+            echo "Claude edited protected files:"; echo "$protected"
+            git checkout -- . && git clean -fd
+            status=declined
+            summary="That change would touch the site's technical setup, which I'm not allowed to edit. Nothing was changed."
+          fi
+
+          if [ "$status" = "changed" ] && [ -z "$(git status --porcelain)" ]; then
+            status=no_change
+          fi
+
+          echo "status=$status" >>"$GITHUB_OUTPUT"
+          { echo "summary<<EOF"; echo "$summary"; echo "EOF"; } >>"$GITHUB_OUTPUT"
+
+      - name: Verify the site still builds
+        if: steps.result.outputs.status == 'changed'
+        run: npm run build
+
+      - name: Commit to preview
+        if: steps.result.outputs.status == 'changed'
+        env:
+          PROMPT: ${{ inputs.prompt }}
+          SUMMARY: ${{ steps.result.outputs.summary }}
+          REQUEST_ID: ${{ inputs.request_id }}
+        run: |
+          git config user.name "claude[bot]"
+          git config user.email "41898282+claude[bot]@users.noreply.github.com"
+          git add -A
+          title=$(echo "$PROMPT" | head -n1 | cut -c1-72)
+          git commit -m "Site edit: $title" -m "$SUMMARY" -m "Request-Id: ${REQUEST_ID:-$GITHUB_RUN_ID}"
+          git push origin HEAD:preview
+
+      # The CMS reads this annotation (via the check-runs API) to show the owner what happened.
+      - name: Report result
+        if: always()
+        env:
+          STATUS: ${{ steps.result.outputs.status || 'failed' }}
+          SUMMARY: ${{ steps.result.outputs.summary }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          if [ "$JOB_STATUS" != "success" ]; then
+            STATUS=failed
+            SUMMARY="Something went wrong while making that change, so nothing was published to the preview. Try again, or rephrase the request."
+          fi
+          json=$(jq -cn --arg status "$STATUS" --arg summary "$SUMMARY" '{status: $status, summary: $summary}')
+          echo "::notice title=cms-result::${json//%/%25}"
+          { echo "### $STATUS"; echo; echo "$SUMMARY"; } >>"$GITHUB_STEP_SUMMARY"

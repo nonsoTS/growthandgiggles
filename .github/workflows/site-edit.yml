@@ -36,20 +36,30 @@ permissions:
 
 jobs:
   edit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: preview
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
 
       - run: npm ci
+
+      # claude-code-action needs Bun. Its built-in download has no retry and
+      # occasionally fails with a 504, so install it here with retries instead.
+      - name: Install Bun
+        run: |
+          for attempt in 1 2 3 4 5; do
+            curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.4" && break
+            echo "Bun install failed (attempt $attempt), retrying..."; sleep $((attempt * 10))
+          done
+          test -x "$HOME/.bun/bin/bun"
 
       - name: Ask Claude to make the change
         id: claude
@@ -57,6 +67,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          path_to_bun_executable: /home/runner/.bun/bin/bun
           prompt: |
             The site owner has requested a change to the website. Follow CLAUDE.md.
 

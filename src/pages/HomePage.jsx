@@ -216,7 +216,7 @@ const HomePage = () => {
           
           <div className="grid md:grid-cols-3 gap-6 mt-12">
             {['Marketing Strategy', 'Paid Media Campaign', 'AI Workflow', 'Content Strategy', 'SEO/AEO Project', 'Email Campaign', 'Growth Experiment', 'Performance Analysis', 'Case Studies'].map((item, i) => (
-              <PortfolioCard key={i} category="Incubator Project" title={item} />
+              <PortfolioCard key={i} category="Incubator Project" title={item} image="/portfolio/placeholder.svg" />
             ))}
           </div>
         </div>

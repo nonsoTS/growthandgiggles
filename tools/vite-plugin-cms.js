@@ -4,7 +4,8 @@ import { parseSync } from 'vite';
 // Support for the /admin editor:
 // - Writes /version.json ({ commit }) on every build, so the editor knows when a deploy is live.
 // - On preview builds only, tags every HTML element in src/ with data-src="file:line" so that
-//   clicking an element in the editor tells Claude exactly where it is defined.
+//   clicking an element in the editor tells Claude exactly where it is defined, and keeps the
+//   preview out of search engines (noindex + robots.txt).
 
 const isPreviewBuild = () => process.env.CONTEXT === 'branch-deploy' || process.env.CMS_SOURCE_TAGS === '1';
 
@@ -66,7 +67,14 @@ export default function cmsPlugin() {
 			const tagged = tagSource(code, file);
 			return tagged && { code: tagged, map: null };
 		},
+		transformIndexHtml() {
+			if (!isPreviewBuild()) return [];
+			return [{ tag: 'meta', attrs: { name: 'robots', content: 'noindex, nofollow' }, injectTo: 'head' }];
+		},
 		generateBundle() {
+			if (isPreviewBuild()) {
+				this.emitFile({ type: 'asset', fileName: 'robots.txt', source: 'User-agent: *\nDisallow: /\n' });
+			}
 			this.emitFile({
 				type: 'asset',
 				fileName: 'version.json',

@@ -33,5 +33,5 @@ export default handler(async (req) => {
 	await moveBranch(LIVE, publishSha);
 	await moveBranch(PREVIEW, publishSha);
 
-	return json({ published: changes.length });
+	return json({ published: changes.length, sha: publishSha });
 });

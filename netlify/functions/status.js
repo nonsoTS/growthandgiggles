@@ -1,5 +1,5 @@
 import { requireOwner } from '../lib/auth.js';
-import { editRuns, gh, ghDownload } from '../lib/github.js';
+import { branchSha, editRuns, gh, ghDownload, PREVIEW } from '../lib/github.js';
 import { env, error, handler, json } from '../lib/http.js';
 
 const FALLBACK_SUMMARY = {
@@ -36,6 +36,7 @@ export default handler(async (req) => {
 		return json({ state: run.status === 'in_progress' ? 'running' : 'queued', startedAt: run.run_started_at });
 	}
 
-	const result = await readResult(run);
-	return json({ state: 'done', ...result, previewUrl: env('PREVIEW_URL') });
+	// previewSha lets the editor wait for Netlify to deploy this exact commit before reloading.
+	const [result, previewSha] = await Promise.all([readResult(run), branchSha(PREVIEW)]);
+	return json({ state: 'done', ...result, previewSha, previewUrl: env('PREVIEW_URL') });
 });

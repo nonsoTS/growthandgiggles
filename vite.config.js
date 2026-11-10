@@ -1,9 +1,10 @@
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import cmsPlugin from './tools/vite-plugin-cms.js';
 
 export default defineConfig({
-	plugins: [react()],
+	plugins: [cmsPlugin(), react()],
 	server: {
 		port: 3000,
 	},

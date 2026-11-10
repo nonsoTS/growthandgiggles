@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<meta name="robots" content="noindex, nofollow" />
+	<title>Site editor | Growth & Giggles</title>
+	<link rel="icon" type="image/png" href="/logo.png" />
+	<link rel="stylesheet" href="/admin/admin.css" />
+	<script src="/admin/admin.js" defer></script>
+</head>
+<body>
+	<!-- Shown while checking the session -->
+	<div id="loading" class="center-screen"><div class="spinner"></div></div>
+
+	<!-- Login -->
+	<main id="login" class="center-screen" hidden>
+		<form id="login-form" class="card login-card">
+			<img src="/logo.png" alt="" class="login-logo" />
+			<h1>Site editor</h1>
+			<p class="muted">Log in to make changes to your website.</p>
+			<label for="password">Password</label>
+			<input id="password" type="password" autocomplete="current-password" required autofocus />
+			<p id="login-error" class="error" hidden></p>
+			<button type="submit" class="btn btn-primary btn-block">Log in</button>
+		</form>
+	</main>
+
+	<!-- Editor -->
+	<div id="editor" class="editor" hidden>
+		<header class="topbar">
+			<div class="topbar-left">
+				<strong class="brand">Site editor</strong>
+				<label class="page-picker">
+					<span class="sr-only">Page</span>
+					<select id="page-select" title="Go to page"></select>
+				</label>
+			</div>
+			<div class="topbar-right">
+				<div class="segmented" role="group" aria-label="Preview size">
+					<button type="button" id="view-desktop" class="active" title="Desktop view">Desktop</button>
+					<button type="button" id="view-phone" title="Phone view">Phone</button>
+				</div>
+				<button type="button" id="reload" class="btn btn-ghost" title="Reload preview">Reload</button>
+				<a id="open-preview" class="btn btn-ghost" target="_blank" rel="noopener">Open preview ↗</a>
+				<button type="button" id="publish" class="btn btn-primary" disabled>Publish</button>
+				<div class="menu">
+					<button type="button" id="menu-button" class="btn btn-ghost" aria-haspopup="true" aria-expanded="false" title="More">⋯</button>
+					<div id="menu" class="menu-list" hidden>
+						<button type="button" id="discard">Discard unpublished changes</button>
+						<button type="button" id="undo">Undo last publish</button>
+						<a id="open-live" target="_blank" rel="noopener">View live site ↗</a>
+						<button type="button" id="logout">Log out</button>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<div class="workspace">
+			<section class="stage" id="stage">
+				<div class="frame-wrap" id="frame-wrap">
+					<iframe id="frame" title="Website preview"></iframe>
+				</div>
+				<div id="select-hint" class="select-hint" hidden>Click anything on the page to select it · <kbd>Esc</kbd> to cancel</div>
+			</section>
+
+			<aside class="panel">
+				<section class="panel-section">
+					<h2>Request a change</h2>
+					<button type="button" id="select-toggle" class="btn btn-outline btn-block">
+						<span aria-hidden="true">⌖</span> Select something on the page
+					</button>
+					<div id="selection" class="selection" hidden>
+						<div class="selection-text">
+							<span class="muted small">Selected</span>
+							<span id="selection-label"></span>
+						</div>
+						<button type="button" id="selection-clear" class="icon-btn" title="Clear selection">✕</button>
+					</div>
+					<form id="request-form">
+						<label for="request" class="sr-only">Describe the change</label>
+						<textarea id="request" rows="4" placeholder="Describe the change, e.g. “Change this heading to ‘Learn marketing by doing’”" required></textarea>
+						<div class="row">
+							<span class="muted small">On page <span id="current-page">/</span></span>
+							<button type="submit" id="send" class="btn btn-primary">Send</button>
+						</div>
+					</form>
+				</section>
+
+				<section id="job" class="panel-section job" hidden>
+					<div class="job-head">
+						<div id="job-spinner" class="spinner small"></div>
+						<strong id="job-title"></strong>
+					</div>
+					<p id="job-request" class="muted small job-request"></p>
+					<p id="job-message" class="job-message"></p>
+					<form id="reply-form" hidden>
+						<label for="reply" class="sr-only">Your answer</label>
+						<textarea id="reply" rows="3" placeholder="Your answer…" required></textarea>
+						<button type="submit" class="btn btn-primary btn-block">Send answer</button>
+					</form>
+					<button type="button" id="job-dismiss" class="btn btn-ghost btn-block" hidden>OK</button>
+				</section>
+
+				<section class="panel-section">
+					<h2>Waiting to publish <span id="changes-count" class="badge">0</span></h2>
+					<p id="changes-empty" class="muted small">Nothing yet. Changes you make appear on the preview first, then go live when you press Publish.</p>
+					<ol id="changes" class="changes"></ol>
+					<p id="last-publish" class="muted small" hidden></p>
+				</section>
+			</aside>
+		</div>
+	</div>
+
+	<!-- Confirm dialog -->
+	<dialog id="confirm" class="card dialog">
+		<form method="dialog">
+			<h2 id="confirm-title"></h2>
+			<div id="confirm-body" class="muted"></div>
+			<div class="row end">
+				<button value="cancel" class="btn btn-ghost">Cancel</button>
+				<button value="ok" id="confirm-ok" class="btn btn-primary"></button>
+			</div>
+		</form>
+	</dialog>
+
+	<div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>

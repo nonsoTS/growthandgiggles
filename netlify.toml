@@ -14,6 +14,12 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+# Site editor (public/admin/)
+[[redirects]]
+  from = "/admin"
+  to = "/admin/"
+  status = 301
+
 # Single-page app: let React Router handle every path.
 [[redirects]]
   from = "/*"
@@ -25,3 +31,17 @@
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=604800, immutable"
+
+# Lets the editor see which commit is deployed (it checks the live site cross-origin).
+[[headers]]
+  for = "/version.json"
+  [headers.values]
+    Cache-Control = "no-store"
+    Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+    X-Robots-Tag = "noindex, nofollow"
+    X-Frame-Options = "DENY"

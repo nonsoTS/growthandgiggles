@@ -15,7 +15,8 @@ export default handler(async (req) => {
 	const changes = await pendingChanges();
 	if (changes.length === 0) fail('There are no unpublished changes to discard.', 409);
 
-	await moveBranch(PREVIEW, await branchSha(LIVE), { force: true });
+	const liveSha = await branchSha(LIVE);
+	await moveBranch(PREVIEW, liveSha, { force: true });
 
-	return json({ discarded: changes.length });
+	return json({ discarded: changes.length, sha: liveSha });
 });

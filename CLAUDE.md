@@ -34,6 +34,11 @@ deployed on Netlify. No backend in this repo; there is no TypeScript.
 
 Most text lives directly in the page files as JSX. Change the text in place.
 
+When the owner selected an element, you get its source location (`file:line` of the JSX that
+renders it), visible text and HTML. If the location is a shared component such as
+`SharedComponents.jsx`, the text is usually passed in from the page file: change it there, not in
+the shared component (which would change every page that uses it).
+
 ## Design rules
 
 - The site is always in dark mode. Primary/accent colour is amber (`--primary`, #FBBF24).
@@ -63,7 +68,7 @@ Most text lives directly in the page files as JSX. Change the text in place.
 
 Do not edit, unless a developer (not the site owner) explicitly asks:
 
-- `.github/`, `netlify/` (the editing system's backend), `netlify.toml`, `vite.config.js`, `package.json`, `package-lock.json`, `eslint*`
+- `.github/`, `netlify/`, `public/admin/`, `tools/` (the editing system itself), `netlify.toml`, `vite.config.js`, `package.json`, `package-lock.json`, `eslint*`
 - `CLAUDE.md`
 - The form submission logic in `ContactPage.jsx` (the endpoint URL, Turnstile verification, and
   request code). Changing the form's labels, text and styling is fine.

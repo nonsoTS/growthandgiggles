@@ -27,5 +27,5 @@ export default handler(async (req) => {
 	await moveBranch(LIVE, undoSha);
 	await moveBranch(PREVIEW, undoSha, { force: true });
 
-	return json({ undone: title });
+	return json({ undone: title, sha: undoSha });
 });

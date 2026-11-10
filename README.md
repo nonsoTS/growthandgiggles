@@ -10,6 +10,13 @@ owner types a request ──▶ /api/edit ──▶ GitHub Action "Site edit" �
 owner clicks Publish  ──▶ /api/publish ──▶ `main` updated ──▶ Netlify deploys the live site
 ```
 
+## Using the editor
+
+Go to `/admin` on either site (it redirects to the preview site, where the editor runs) and log in
+with `ADMIN_PASSWORD`. Pick a page, optionally click **Select something on the page**, describe the
+change and press **Send**. When it's done the preview reloads; **Publish** makes it live. The **⋯**
+menu has **Discard unpublished changes** and **Undo last publish**.
+
 ## Branches
 
 - `main` is the live site. Only the CMS writes to it (Publish / Undo), or a developer (see below).
@@ -24,6 +31,8 @@ owner clicks Publish  ──▶ /api/publish ──▶ `main` updated ──▶ 
 | `.github/workflows/site-edit.yml` | Runs Claude on `preview`, checks protected files, verifies the build, commits |
 | `netlify/functions/` | CMS backend: `login`, `logout`, `session`, `edit`, `status`, `changes`, `publish`, `discard`, `undo` (served at `/api/<name>`) |
 | `netlify/lib/` | Shared auth (signed session cookie), GitHub API and HTTP helpers |
+| `public/admin/` | The editor UI (plain HTML/CSS/JS, independent of the React site so a bad edit can't break it) |
+| `tools/vite-plugin-cms.js` | Writes `/version.json` (deployed commit) on every build; on preview builds tags elements with `data-src="file:line"` for click-to-select |
 
 ## Configuration
 

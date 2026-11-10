@@ -72,7 +72,9 @@ jobs:
             The site owner has requested a change to the website. Follow CLAUDE.md.
 
             Page they were viewing: ${{ inputs.page || '(not specified)' }}
-            Element they selected: ${{ inputs.element || '(none)' }}
+            Element they selected on that page (if any). Its source location is a strong hint for
+            which file to edit, but text often comes from the page file via props:
+            ${{ inputs.element || '(none)' }}
 
             Their request:
             ${{ inputs.prompt }}
@@ -99,7 +101,7 @@ jobs:
           fi
 
           changed=$(git status --porcelain | awk '{print $2}')
-          protected=$(echo "$changed" | grep -E '^(\.github/|netlify/|netlify\.toml$|vite\.config\.js$|package(-lock)?\.json$|eslint|CLAUDE\.md$)' || true)
+          protected=$(echo "$changed" | grep -E '^(\.github/|netlify/|public/admin/|tools/|netlify\.toml$|vite\.config\.js$|package(-lock)?\.json$|eslint|CLAUDE\.md$)' || true)
           if [ -n "$protected" ]; then
             echo "Claude edited protected files:"; echo "$protected"
             git checkout -- . && git clean -fd

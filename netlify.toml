@@ -2,8 +2,17 @@
   command = "npm run build"
   publish = "dist"
 
+[functions]
+  directory = "netlify/functions"
+
 [build.environment]
   NODE_VERSION = "22"
+
+# CMS backend (netlify/functions/*), e.g. /api/edit -> functions/edit.js
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
 
 # Single-page app: let React Router handle every path.
 [[redirects]]

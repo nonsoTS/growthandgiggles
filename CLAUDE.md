@@ -63,7 +63,7 @@ Most text lives directly in the page files as JSX. Change the text in place.
 
 Do not edit, unless a developer (not the site owner) explicitly asks:
 
-- `.github/`, `netlify.toml`, `vite.config.js`, `package.json`, `package-lock.json`, `eslint*`
+- `.github/`, `netlify/` (the editing system's backend), `netlify.toml`, `vite.config.js`, `package.json`, `package-lock.json`, `eslint*`
 - `CLAUDE.md`
 - The form submission logic in `ContactPage.jsx` (the endpoint URL, Turnstile verification, and
   request code). Changing the form's labels, text and styling is fine.

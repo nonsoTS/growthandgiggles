@@ -99,7 +99,7 @@ jobs:
           fi
 
           changed=$(git status --porcelain | awk '{print $2}')
-          protected=$(echo "$changed" | grep -E '^(\.github/|netlify\.toml$|vite\.config\.js$|package(-lock)?\.json$|eslint|CLAUDE\.md$)' || true)
+          protected=$(echo "$changed" | grep -E '^(\.github/|netlify/|netlify\.toml$|vite\.config\.js$|package(-lock)?\.json$|eslint|CLAUDE\.md$)' || true)
           if [ -n "$protected" ]; then
             echo "Claude edited protected files:"; echo "$protected"
             git checkout -- . && git clean -fd

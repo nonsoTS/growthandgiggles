@@ -215,8 +215,23 @@ const HomePage = () => {
           />
           
           <div className="grid md:grid-cols-3 gap-6 mt-12">
-            {['Marketing Strategy', 'Paid Media Campaign', 'AI Workflow', 'Content Strategy', 'SEO/AEO Project', 'Email Campaign', 'Growth Experiment', 'Performance Analysis', 'Case Studies'].map((item, i) => (
-              <PortfolioCard key={i} category="Incubator Project" title={item} />
+            {[
+              ['Marketing Strategy', '1460925895917-afdab827c52f'],
+              ['Paid Media Campaign', '1551288049-bebda4e38f71'],
+              ['AI Workflow', '1677442136019-21780ecad995'],
+              ['Content Strategy', '1499750310107-5fef28a66643'],
+              ['SEO/AEO Project', '1432888498266-38ffec3eaf0a'],
+              ['Email Campaign', '1596526131083-e8c633c948d2'],
+              ['Growth Experiment', '1533750349088-cd871a92f312'],
+              ['Performance Analysis', '1504868584819-f8e8b4b6d7e3'],
+              ['Case Studies', '1454165804606-c3d57bc86b40'],
+            ].map(([item, photo], i) => (
+              <PortfolioCard
+                key={i}
+                category="Incubator Project"
+                title={item}
+                image={`https://images.unsplash.com/photo-${photo}?auto=format&fit=crop&w=800&q=80`}
+              />
             ))}
           </div>
         </div>

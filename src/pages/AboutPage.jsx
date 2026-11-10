@@ -29,7 +29,7 @@ const AboutPage = () => {
           { value: "100%", label: "Hands-on projects" },
           { value: "0", label: "Boring exams" },
           { value: "12", label: "Intensive weeks" },
-          { value: "24/7", label: "Support" }
+          { value: "Infinite", label: "Support" }
         ]} />
       </div>
     </div>

@@ -8,7 +8,7 @@ const ResourcesPage = () => {
       <Helmet><title>Resources | Growth & Giggles</title></Helmet>
       <div className="container mx-auto px-4 max-w-6xl">
         <SectionHeading 
-          title="TEST The Content Hub"
+          title="The Content Hub"
           subtitle="Frameworks, teardowns, and guides on AI marketing, growth, and building a modern career."
         />
         

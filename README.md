@@ -37,7 +37,7 @@ Netlify environment variables:
 |---|---|
 | `ADMIN_PASSWORD` | The owner's CMS password |
 | `SESSION_SECRET` | Random string, at least 32 characters (`openssl rand -base64 48`) |
-| `CMS_GITHUB_TOKEN` | Fine-grained GitHub token for this repo only: Actions, Contents (read/write), Checks (read) |
+| `CMS_GITHUB_TOKEN` | Fine-grained GitHub token for this repo only: Actions and Contents, both read/write |
 | `GITHUB_REPO` | `nonsoTS/growthandgiggles` |
 | `PREVIEW_URL` | `https://preview--growthandgiggles.netlify.app` |
 

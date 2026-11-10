@@ -5,15 +5,18 @@ export const WORKFLOW = 'site-edit.yml';
 export const LIVE = 'main';
 export const PREVIEW = 'preview';
 
+function headers() {
+	return {
+		Authorization: `Bearer ${env('CMS_GITHUB_TOKEN')}`,
+		Accept: 'application/vnd.github+json',
+		'X-GitHub-Api-Version': '2022-11-28',
+	};
+}
+
 export async function gh(path, { method = 'GET', body, allow = [] } = {}) {
 	const res = await fetch(`${API}/repos/${env('GITHUB_REPO')}${path}`, {
 		method,
-		headers: {
-			Authorization: `Bearer ${env('CMS_GITHUB_TOKEN')}`,
-			Accept: 'application/vnd.github+json',
-			'X-GitHub-Api-Version': '2022-11-28',
-			...(body && { 'Content-Type': 'application/json' }),
-		},
+		headers: { ...headers(), ...(body && { 'Content-Type': 'application/json' }) },
 		body: body && JSON.stringify(body),
 	});
 
@@ -24,6 +27,14 @@ export async function gh(path, { method = 'GET', body, allow = [] } = {}) {
 	}
 	if (res.status === 204 || !res.ok) return { status: res.status, data: null };
 	return { status: res.status, data: await res.json() };
+}
+
+// Downloads a file endpoint (GitHub redirects to blob storage; fetch drops the
+// Authorization header on that cross-origin hop) and returns its text.
+export async function ghDownload(path) {
+	const res = await fetch(`${API}/repos/${env('GITHUB_REPO')}${path}`, { headers: headers() });
+	if (!res.ok) throw new Error(`GitHub download ${path} failed: ${res.status}`);
+	return res.text();
 }
 
 export async function branchSha(branch) {

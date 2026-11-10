@@ -132,7 +132,7 @@ jobs:
           git commit -m "Site edit: $title" -m "$SUMMARY" -m "Request-Id: ${REQUEST_ID:-$GITHUB_RUN_ID}"
           git push origin HEAD:preview
 
-      # The CMS reads this annotation (via the check-runs API) to show the owner what happened.
+      # The CMS downloads cms-result.json (an artifact) to show the owner what happened.
       - name: Report result
         if: always()
         env:
@@ -145,5 +145,14 @@ jobs:
             SUMMARY="Something went wrong while making that change, so nothing was published to the preview. Try again, or rephrase the request."
           fi
           json=$(jq -cn --arg status "$STATUS" --arg summary "$SUMMARY" '{status: $status, summary: $summary}')
+          echo "$json" >"$RUNNER_TEMP/cms-result.json"
           echo "::notice title=cms-result::${json//%/%25}"
           { echo "### $STATUS"; echo; echo "$SUMMARY"; } >>"$GITHUB_STEP_SUMMARY"
+
+      - name: Upload result for the CMS
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ runner.temp }}/cms-result.json
+          archive: false
+          retention-days: 7

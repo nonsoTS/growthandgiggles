@@ -1,5 +1,5 @@
 import { requireOwner } from '../lib/auth.js';
-import { editRuns, gh } from '../lib/github.js';
+import { editRuns, gh, ghDownload } from '../lib/github.js';
 import { env, error, handler, json } from '../lib/http.js';
 
 const FALLBACK_SUMMARY = {
@@ -7,17 +7,15 @@ const FALLBACK_SUMMARY = {
 	failure: 'Something went wrong while making that change, so nothing was changed. Try again, or rephrase the request.',
 };
 
-// The workflow posts {status, summary} as a "cms-result" annotation on its job.
+// The workflow uploads {status, summary} as an unzipped "cms-result.json" artifact.
 async function readResult(run) {
-	const { data } = await gh(`/actions/runs/${run.id}/jobs`);
-	const job = data.jobs[0];
-	if (job) {
-		const { data: annotations } = await gh(`/check-runs/${job.id}/annotations`);
-		const note = annotations.find((a) => a.title === 'cms-result');
-		if (note) {
-			try {
-				return JSON.parse(note.message);
-			} catch {}
+	const { data } = await gh(`/actions/runs/${run.id}/artifacts`);
+	const artifact = data.artifacts.find((a) => a.name === 'cms-result.json' && !a.expired);
+	if (artifact) {
+		try {
+			return JSON.parse(await ghDownload(`/actions/artifacts/${artifact.id}/zip`));
+		} catch (err) {
+			console.error('Could not read cms-result.json', err);
 		}
 	}
 	const ok = run.conclusion === 'success';
